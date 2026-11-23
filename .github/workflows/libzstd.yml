@@ -23,12 +23,12 @@ jobs:
 
       matrix:
         build_env: [
-          {os: ubuntu-24.04, c_compiler: gcc, lib: 'src/libzstd.so', jna_id: 'linux-x86-64'},
-          {os: ubuntu-24.04-arm, c_compiler: gcc, lib: 'src/libzstd.so', jna_id: 'linux-aarch64'},
-          {os: windows-2022, c_compiler: cl, lib: 'src\\Release\\zstd.dll', jna_id: 'win32-x86-64'},
-          {os: windows-11-arm, c_compiler: cl, lib: 'src\\Release\\zstd.dll', jna_id: 'win32-aarch64'},
-          {os: macos-15, c_compiler: clang, lib: 'src/libzstd.dylib', jna_id: 'darwin-aarch64'},
-          {os: macos-15-intel, c_compiler: clang, lib: 'src/libzstd.dylib', jna_id: 'darwin-x86-64'},
+          {os: ubuntu-24.04, c_compiler: gcc, lib: '/lib/libzstd.so', jna_id: 'linux-x86-64'},
+          {os: ubuntu-24.04-arm, c_compiler: gcc, lib: '/lib/libzstd.so', jna_id: 'linux-aarch64'},
+          {os: windows-2022, c_compiler: cl, lib: '\\lib\\Release\\zstd.dll', jna_id: 'win32-x86-64'},
+          {os: windows-11-arm, c_compiler: cl, lib: '\\lib\\Release\\zstd.dll', jna_id: 'win32-aarch64'},
+          {os: macos-15, c_compiler: clang, lib: '/lib/libzstd.dylib', jna_id: 'darwin-aarch64'},
+          {os: macos-15-intel, c_compiler: clang, lib: '/lib/libzstd.dylib', jna_id: 'darwin-x86-64'},
         ]
         build_type: [Release]
 
@@ -44,23 +44,25 @@ jobs:
         id: strings
         shell: bash
         run: |
-          echo "build-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
-
-      - name: list workspace and build dir
-        shell: bash
-        run: |
-          ls ${{ github.workspace }}
-          ls ${{ steps.strings.outputs.build-dir }}
+          echo "build-dir=${{ github.workspace }}/cmake-build" >> "$GITHUB_OUTPUT"
 
       - name: Configure CMake
         run: >
           cmake -B ${{ steps.strings.outputs.build-dir }}
           -DCMAKE_C_COMPILER=${{ matrix.build_env.c_compiler }}
           -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-          -S ${{ github.workspace }}
+          -DZSTD_BUILD_TESTS=ON
+          -S ${{ github.workspace }}/build/cmake
 
       - name: Build
         run: cmake --build ${{ steps.strings.outputs.build-dir }} --config ${{ matrix.build_type }}
+
+      - name: list workspace and build dir
+        shell: bash
+        run: |
+          ls ${{ github.workspace }}
+          ls ${{ steps.strings.outputs.build-dir }}
+          ls ${{ steps.strings.outputs.build-dir }}/lib
 
       - name: Test
         working-directory: ${{ steps.strings.outputs.build-dir }}
@@ -73,7 +75,7 @@ jobs:
           mkdir resources
           mkdir resources/${{ matrix.build_env.jna_id }}
           cp ../LICENSE.txt resources/${{ matrix.build_env.jna_id }}/libzstd-LICENSE.txt
-          cp ${{ matrix.build_env.lib }} resources/${{ matrix.build_env.jna_id }}
+          cp ${{ steps.strings.outputs.build-dir }}${{ matrix.build_env.lib }} resources/${{ matrix.build_env.jna_id }}
 
       - name: Upload ${{ matrix.build_env.jna_id }} artifact
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
