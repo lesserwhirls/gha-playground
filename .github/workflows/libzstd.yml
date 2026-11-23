@@ -44,7 +44,7 @@ jobs:
         id: strings
         shell: bash
         run: |
-          echo "build-dir=${{ github.workspace }}/cmake-build" | sed 's/\\/\//g >> "$GITHUB_OUTPUT"
+          echo "build-dir=${{ github.workspace }}/cmake-build" | sed 's/\\/\//g' >> "$GITHUB_OUTPUT"
 
       - name: Configure CMake
         run: >
