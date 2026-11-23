@@ -74,7 +74,7 @@ jobs:
         run: |
           mkdir resources
           mkdir resources/${{ matrix.build_env.jna_id }}
-          cp ../LICENSE.txt resources/${{ matrix.build_env.jna_id }}/libzstd-LICENSE.txt
+          cp ${{ github.workspace }}/LICENSE.txt resources/${{ matrix.build_env.jna_id }}/libzstd-LICENSE.txt
           cp ${{ steps.strings.outputs.build-dir }}${{ matrix.build_env.lib }} resources/${{ matrix.build_env.jna_id }}
 
       - name: Upload ${{ matrix.build_env.jna_id }} artifact
